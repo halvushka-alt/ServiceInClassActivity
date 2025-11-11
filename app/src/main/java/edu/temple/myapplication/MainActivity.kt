@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.stopButton).setOnClickListener {
             if (isBound) {
                 timerService?.stop()
-                textView.text = "100" // reset default
+                textView.text = "100"
             }
         }
     }
