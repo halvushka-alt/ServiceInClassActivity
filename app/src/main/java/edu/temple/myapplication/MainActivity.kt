@@ -28,13 +28,11 @@ class MainActivity : AppCompatActivity() {
             timerService = service as TimerService.TimerBinder
             timerService?.setHandler(handler)
             isBound = true
-            Log.d("MainActivity", "Service connected")
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
             isBound = false
             timerService = null
-            Log.d("MainActivity", "Service disconnected")
         }
     }
 
@@ -43,45 +41,29 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         textView = findViewById(R.id.textView)
-        val startButton = findViewById<Button>(R.id.startButton)
-        val stopButton = findViewById<Button>(R.id.stopButton)
-
-        startButton.setOnClickListener {
+        findViewById<Button>(R.id.startButton).setOnClickListener {
             if (isBound) {
-                when {
-                    timerService?.paused == true -> {
-                        timerService?.pause() // resume
-                        Log.d("MainActivity", "Timer resumed")
-                    }
-                    timerService?.isRunning == false -> {
-                        timerService?.start(100)
-                        Log.d("MainActivity", "Timer started")
-                    }
-                    else -> {
-                        timerService?.pause() // pause
-                        Log.d("MainActivity", "Timer paused")
-                    }
-                }
-            } else {
-                Log.d("MainActivity", "Service not bound yet")
+                if (timerService?.paused == true || timerService?.isRunning == false)
+                    timerService?.start(100)
+                else
+                    timerService?.pause()
             }
         }
 
-        stopButton.setOnClickListener {
+        findViewById<Button>(R.id.stopButton).setOnClickListener {
             if (isBound) {
                 timerService?.stop()
-                textView.text = "0"
-                Log.d("MainActivity", "Timer stopped")
+                textView.text = "100" // reset default
             }
         }
     }
 
     override fun onStart() {
         super.onStart()
-        val intent = Intent(this, TimerService::class.java)
-        startService(intent)
-        bindService(intent, connection, Context.BIND_AUTO_CREATE)
-        Log.d("MainActivity", "Binding to service...")
+        Intent(this, TimerService::class.java).also {
+            startService(it)
+            bindService(it, connection, Context.BIND_AUTO_CREATE)
+        }
     }
 
     override fun onStop() {
@@ -89,8 +71,6 @@ class MainActivity : AppCompatActivity() {
         if (isBound) {
             unbindService(connection)
             isBound = false
-            Log.d("MainActivity", "Unbound from service")
         }
-        stopService(Intent(this, TimerService::class.java))
     }
 }
